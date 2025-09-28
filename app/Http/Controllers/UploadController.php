@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UploadController extends Controller
 {
@@ -23,22 +24,45 @@ class UploadController extends Controller
     public function initiate(Request $r)
     {
         $data = $r->validate([
-            'original_name' => 'required|string',
-            'size' => 'nullable|integer',
-            'checksum' => 'nullable|string',
-            'meta' => 'nullable|array'
+            'images.*.original_name' => 'required|string',
+            'images.*.size' => 'nullable|integer',
+            'images.*.checksum' => 'nullable|string',
+            'images.*.meta' => 'nullable|array'
         ]);
 
-        $upload = Upload::create([
-            'original_name' => $data['original_name'],
-            'size' => $data['size'] ?? null,
-            'checksum' => $data['checksum'] ?? null,
-            'status' => 'pending',
-            'meta' => $data['meta'] ?? null,
-        ]);
+        if (!isset($r->images) || !is_array($r->images) || empty($r->images)) {
+            return response()->json(['error' => 'no images provided'], 422);
+        }
+        $insertData = [];
+        $batchKey = Str::uuid()->toString();
+        foreach ($r->images as $data) {
+
+            $insertData[] = [
+                'original_name' => $data['original_name'],
+                'size' => $data['size'] ?? null,
+                'checksum' => $data['checksum'] ?? null,
+                'status' => 'pending',
+                'batch_key' => $batchKey,
+            ];
+        }
+
+        $chunkedData = array_chunk($insertData, 1000);
+        foreach ($chunkedData as $chunk) {
+            Upload::insert($chunk);
+        }
+        $upload = Upload::where('batch_key', $batchKey)
+                ->pluck("original_name", "id");
+
+        // $upload = Upload::create([
+        //     'original_name' => $data['original_name'],
+        //     'size' => $data['size'] ?? null,
+        //     'checksum' => $data['checksum'] ?? null,
+        //     'status' => 'pending',
+        //     'meta' => $data['meta'] ?? null,
+        // ]);
 
         return response()->json([
-            'upload_id' => $upload->id,
+            'upload_details' => $upload,
             'message' => 'initiated'
         ]);
     }

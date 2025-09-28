@@ -22,6 +22,7 @@ class ImportController extends Controller
     // NOTE: For very large CSVs you may want to dispatch a job instead (see previous examples)
     public function handle(Request $r)
     {
+        set_time_limit(0);
         $r->validate(['file' => 'required|file|mimes:csv,txt']);
 
         $path = $r->file('file')->store('imports');

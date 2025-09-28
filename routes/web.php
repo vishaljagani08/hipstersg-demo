@@ -5,6 +5,7 @@ use App\Http\Controllers\UploadController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
+    return redirect()->route('imports.ui');
     return view('welcome');
 });
 

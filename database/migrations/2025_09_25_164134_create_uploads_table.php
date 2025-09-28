@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('checksum')->nullable(); // expected final SHA256
             $table->enum('status', ['pending','completed','failed'])->default('pending');
             $table->string('storage_path')->nullable(); // public disk path after assembled
+            $table->string('batch_key')->nullable();             
             $table->json('meta')->nullable();
             $table->timestamps();
         });

@@ -691,7 +691,6 @@
         var testHandler = function(e){
           $.tested = true;
           $.fire('send', $);
-          console.log("-----------------------testHandler");
           var status = $.status();
           if(status=='success') {
             $.callback(status, $.message());
@@ -757,7 +756,6 @@
       $.preprocessFinished = function(){
         $.preprocessState = 2;
         $.fire('send', $);
-        console.log("-----------------------preprocessFinished");
         $.send();
       };
 
@@ -795,7 +793,6 @@
         var doneHandler = function(e){
           var status = $.status();
         //   $.fire('send', $);
-        console.log("-----------------------doneHandler", status);
           if(status=='success'||status=='error') {
             $.callback(status, $.message());
             $.resumableObj.uploadNextChunk();
@@ -804,7 +801,6 @@
             $.abort();
             $.retries++;
             var retryInterval = $.getOpt('chunkRetryInterval');
-            console.log("retryInterval", retryInterval);
             if(retryInterval !== undefined) {
               $.pendingRetry = true;
               setTimeout($.send, retryInterval);
