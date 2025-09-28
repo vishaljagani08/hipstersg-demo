@@ -6,6 +6,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use App\Models\Upload;
 use App\Models\Image;
+use App\Models\Product;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels, Dispatchable};
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;

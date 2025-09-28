@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\GenerateImageVariants;
 use App\Models\Image;
+use App\Models\Product;
 use App\Models\Upload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -163,11 +164,20 @@ class UploadController extends Controller
                 'storage_path' => $publicPath
             ]);
 
+            
+            $sku = $this->extractSkuFromImage(basename($upload->original_name));
+            $product = null;
+            if($sku){
+                $product = Product::where("sku", $sku)->first();
+            }
+
+
             // create image record for original
             $img = Image::create([
                 'upload_id' => $upload->id,
                 'variant' => 'original',
-                'path' => $publicPath
+                'path' => $publicPath,
+                'product_id' => $product ? $product->id : null
             ]);
 
             // dispatch variants generation job (queued)
@@ -178,5 +188,16 @@ class UploadController extends Controller
         } finally {
             $lock->release();
         }
+    }
+    
+    public function extractSkuFromImage(string $filename): ?string
+    {
+        $name = pathinfo($filename, PATHINFO_FILENAME);
+
+        if (str_starts_with($name, 'img_')) {
+            return substr($name, 4); 
+        }
+
+        return null;
     }
 }

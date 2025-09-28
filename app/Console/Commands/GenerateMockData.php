@@ -31,8 +31,10 @@ class GenerateMockData extends Command
         $f = fopen($csvPath, 'w');
         fputcsv($f, ['sku', 'name', 'description', 'price', 'upload_id']); // upload_id empty for now
 
+        $skuList = [];
         for ($i = 1; $i <= $rows; $i++) {
             $sku = 'SKU-' . str_pad($i, 6, '0', STR_PAD_LEFT);
+            $skuList[] = $sku;
             fputcsv($f, [$sku, "Product $i", "Desc for $i", rand(100, 10000) / 100, '']);
         }
         fclose($f);
@@ -50,8 +52,13 @@ class GenerateMockData extends Command
 
         $dir = Storage::disk('public')->path('app/mocks/images');
         @mkdir($dir, 0755, true);
+
+        if(count($skuList)<$images){
+            $images = count($skuList);
+        }
+
         for ($i = 1; $i <= $images; $i++) {
-            copy($sample, $dir . '/img_' . str_pad($i, 4, '0', STR_PAD_LEFT) . '.jpg');
+            copy($sample, $dir . '/img_' . $skuList[$i] . '.jpg');
         }
         $this->info("Created $images images in $dir");
         $this->info("Done.");
